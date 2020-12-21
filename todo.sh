@@ -1,19 +1,27 @@
 #! /bin/bash
 
 printTasks() {
-    echo " "
-    echo "ALL TASKS LIST: "
-    local i=0
+    if [ ${index:7:${#index}} -eq 0 ]
+    then
+        echo " "
+        echo "There is not tasks to complete"
+        echo "For help use -h or --help flag"
+        echo " "
+    else
+        echo " "
+        echo "TASKS LIST: "
+        local i=0
 
-    while IFS= read -r line
-    do
-        if [[ "$line" != "INDEX:"* ]]
-        then
-            echo $line
-            (( i++ ))
-        fi
-    done < "./tasks.txt"
-    echo " "
+        while IFS= read -r line
+        do
+            if [[ "$line" != "INDEX:"* ]]
+            then
+                echo $line
+                (( i++ ))
+            fi
+        done < "./tasks.txt"
+        echo " "
+    fi
 }
 index=$(head -n 1 ./tasks.txt)
 newIndex=0;
@@ -27,17 +35,7 @@ updateIndex() {
 
 if [ $# -eq 0 ] 
 then 
-    # ind=${index:7:${#index}}
-    # echo $ind
-    if [ ${index:7:${#index}} -eq 0 ]
-    then
-        echo " "
-        echo "There is not tasks to complete"
-        echo "For help use -h or --help flag"
-        echo " "
-    else
-        printTasks
-    fi
+    printTasks
 fi
 
 while true && [ $# -gt 0 ]; do
@@ -96,7 +94,7 @@ while true && [ $# -gt 0 ]; do
         exit
         ;;
     -c|--clear)
-        echo "ADD TASK"
+        echo "INDEX: 0" > tasks.txt
 
         
         exit
