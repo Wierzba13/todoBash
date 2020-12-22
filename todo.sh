@@ -1,5 +1,7 @@
 #! /bin/bash
 
+readonly tasks=tasks
+
 printTasks() {
     if [ ${index:7:${#index}} -eq 0 ]
     then
@@ -19,18 +21,37 @@ printTasks() {
                 echo $line
                 (( i++ ))
             fi
-        done < "./tasks.txt"
+        done < "./$tasks"
         echo " "
     fi
 }
-index=$(head -n 1 ./tasks.txt)
+index=$(head -n 1 ./$tasks)
 newIndex=0;
 updateIndex() {
     newIndex=$(( ${index:7:${#index}}  + 1 ))
 
     overWrite="INDEX: $newIndex"
-    sed -i "1s/.*/$overWrite/" tasks.txt
+    sed -i "1s/.*/$overWrite/" $tasks
 
+}
+
+removeTask() {
+    id=$1
+    lineToDel=""
+    echo ""
+    lineDel="$(cat $tasks | grep -n "$id)" )"
+    indexOfLineToDel=${lineDel:0:${#id}}
+    indexOfLineToDel=${indexOfLineToDel//[:]/""}
+    indS=$(( ${#indexOfLineToDel} + 1 ))
+    ind=${lineDel:$indS:${#id}}
+    if [[ $lineDel != "" ]] && [[ $lineDel == *":"* ]] && [[ $ind == $id ]]
+    then
+        echo "Task with ID=$id delete successfuly."
+        sed -i.bak -e "${indexOfLineToDel}d" tasks
+    else
+        echo "There is not any task with this ID"
+    fi
+    echo ""
 }
 
 if [ $# -eq 0 ] 
@@ -38,7 +59,7 @@ then
     printTasks
 fi
 
-while true && [ $# -gt 0 ]; do
+while [ $# -gt 0 ]; do
     case "$1" in
     -h|--help)
         echo "
@@ -50,18 +71,19 @@ while true && [ $# -gt 0 ]; do
               |_|\___/|_____/ \___/ 
         "
         
-        echo "Options:"
-        echo "-h, --help            show brief help"
-        echo "-l, --list           displays all tasks"
-        echo "-a, --add             add task"
-        echo "-e, --edit            edit task"
-        echo "-r, --remove          remove task"
-        echo "-c, --clear           remove all tasks"
+        echo "Options ( in []  you must type data ):"
+        echo "-h, --help                        show brief help"
+        echo "-l, --list                        displays all tasks"
+        echo "-a, --add [task content]          add task"
+        echo "-e, --edit                        edit task"
+        echo "-r, --remove [id]                 remove task"
+        echo "-c, --clear                       remove all tasks"
         echo ""
         exit 0
         ;;
     -l|--list)
-            printTasks
+        printTasks
+
         exit
         ;;
     -a|--add)
@@ -74,7 +96,7 @@ while true && [ $# -gt 0 ]; do
         else
             updateIndex
             echo "$newIndex) ${@:2}"
-            echo "$newIndex) ${@:2}" >> tasks.txt
+            echo "$newIndex) ${@:2}" >> $tasks
             echo " "
             (( ctn++ )) 
         fi
@@ -88,15 +110,18 @@ while true && [ $# -gt 0 ]; do
         exit
         ;;
     -r|--remove)
-        echo "ADD TASK"
-
+        if [[ $2 != "" ]]
+        then
+            removeTask $2
+        else
+            echo "Enter the ID"
+        fi
         
         exit
         ;;
     -c|--clear)
-        echo "INDEX: 0" > tasks.txt
+        echo "INDEX: 0" > $tasks
 
-        
         exit
         ;;
     *)
@@ -106,19 +131,3 @@ while true && [ $# -gt 0 ]; do
         ;;
     esac
 done
-
-
-# echo elo >> tasks.txt
-
-
-
-
-
-
-
-# declare -A myArr
-# myArr[indx1]="SIEMAA"
-# myArr[indx2]="ELO"
-# myArr[indx3]="BENC"
-# myArr[indx4]="HEHE"
-# echo ${myArr[indx1]}
