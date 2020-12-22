@@ -5,12 +5,9 @@ readonly tasks=tasks
 printTasks() {
     if [ ${index:7:${#index}} -eq 0 ]
     then
-        echo " "
         echo "There is not tasks to complete"
         echo "For help use -h or --help flag"
-        echo " "
     else
-        echo " "
         echo "TASKS LIST: "
         local i=0
 
@@ -22,7 +19,6 @@ printTasks() {
                 (( i++ ))
             fi
         done < "./$tasks"
-        echo " "
     fi
 }
 index=$(head -n 1 ./$tasks)
@@ -38,7 +34,6 @@ updateIndex() {
 removeTask() {
     id=$1
     lineToDel=""
-    echo ""
     lineDel="$(cat $tasks | grep -n "$id)" )"
     indexOfLineToDel=${lineDel:0:${#id}}
     indexOfLineToDel=${indexOfLineToDel//[:]/""}
@@ -51,7 +46,6 @@ removeTask() {
     else
         echo "There is not any task with this ID"
     fi
-    echo ""
 }
 
 if [ $# -eq 0 ] 
@@ -73,12 +67,20 @@ while [ $# -gt 0 ]; do
         
         echo "Options ( in []  you must type data ):"
         echo "-h, --help                        show brief help"
+        echo "-v, --version                     display version of app"
         echo "-l, --list                        displays all tasks"
         echo "-a, --add [task content]          add task"
-        echo "-e, --edit                        edit task"
+        echo "-e, --edit [id] [new content]     edit task"
         echo "-r, --remove [id]                 remove task"
         echo "-c, --clear                       remove all tasks"
         echo ""
+
+        exit 0
+        ;;
+    -v|--version)
+        echo "Version 1.0.0"
+        echo "Created by Raul Wierzbiński 2020"
+
         exit 0
         ;;
     -l|--list)
@@ -87,26 +89,52 @@ while [ $# -gt 0 ]; do
         exit
         ;;
     -a|--add)
-        echo " "
-        echo "Task added successfuly. Content of added task: "
         cnt=0
         if (( $cnt == 1 ))
         then 
             break
         else
-            updateIndex
-            echo "$newIndex) ${@:2}"
-            echo "$newIndex) ${@:2}" >> $tasks
-            echo " "
-            (( ctn++ )) 
+            if [[ ${@:2} != "" ]] 
+            then
+                echo "Task added successfuly. Content of added task: "
+                updateIndex
+                echo "$newIndex) ${@:2}"
+                echo "$newIndex) ${@:2}" >> $tasks
+                (( ctn++ ))
+            else
+                echo "You can't add empty task"
+            fi
         fi
-        
+
         exit
         ;;
     -e|--edit)
-        echo "ADD TASK"
+        idEdit=$2
+        content=${@:3}
+        prevContent=""
 
-        
+        while IFS= read -r line
+        do
+            if [[ "$line" == "$idEdit)"* ]]
+            then
+                prevContent=$line
+            fi
+        done < "./$tasks"
+
+        if [[ $prevContent != "" ]] 
+        then
+            if [[ $content != "" ]]
+            then
+                sed -i -e "s/$prevContent/$idEdit) $content/" "./$tasks"
+            else
+                echo "New content of task can't be empty"
+            fi
+        else
+            echo "Task with this ID was not found"
+        fi
+
+
+
         exit
         ;;
     -r|--remove)
@@ -121,11 +149,13 @@ while [ $# -gt 0 ]; do
         ;;
     -c|--clear)
         echo "INDEX: 0" > $tasks
+        echo "All tasks have been deleted"
 
         exit
         ;;
     *)
         echo "Unrecognized argument, type -h for list of options"
+
         exit
         break
         ;;
