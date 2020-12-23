@@ -1,9 +1,9 @@
 #! /bin/bash
 
-readonly tasks=tasks
+readonly tasks="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )/tasks"
 
 printTasks() {
-    if [ ${index:7:${#index}} -eq 0 ]
+    if [[ ${index:7:${#index}} -eq 0 ]]
     then
         echo "There is not tasks to complete"
         echo "For help use -h or --help flag"
@@ -18,10 +18,11 @@ printTasks() {
                 echo $line
                 (( i++ ))
             fi
-        done < "./$tasks"
+        done < "$tasks"
     fi
 }
-index=$(head -n 1 ./$tasks)
+
+index=$(head -n 1 $tasks)
 newIndex=0;
 updateIndex() {
     newIndex=$(( ${index:7:${#index}}  + 1 ))
@@ -42,14 +43,14 @@ removeTask() {
     if [[ $lineDel != "" ]] && [[ $lineDel == *":"* ]] && [[ $ind == $id ]]
     then
         echo "Task with ID=$id delete successfuly."
-        sed -i.bak -e "${indexOfLineToDel}d" tasks
+        sed -i.bak -e "${indexOfLineToDel}d" $tasks
     else
         echo "There is not any task with this ID"
     fi
 }
 
-if [ $# -eq 0 ] 
-then 
+if [ $# -eq 0 ]
+then
     printTasks
 fi
 
@@ -57,14 +58,14 @@ while [ $# -gt 0 ]; do
     case "$1" in
     -h|--help)
         echo "
-            _______    _____        
-           |__   __|  |  __ \       
-              | | ___ | |  | | ___  
-              | |/ _ \| |  | |/ _ \ 
+            _______    _____
+           |__   __|  |  __ \
+              | | ___ | |  | | ___
+              | |/ _ \| |  | |/ _ \
               | | (_) | |__| | (_) |
-              |_|\___/|_____/ \___/ 
+              |_|\___/|_____/ \___/
         "
-        
+
         echo "Options ( in []  you must type data ):"
         echo "-h, --help                        show brief help"
         echo "-v, --version                     display version of app"
@@ -91,10 +92,10 @@ while [ $# -gt 0 ]; do
     -a|--add)
         cnt=0
         if (( $cnt == 1 ))
-        then 
+        then
             break
         else
-            if [[ ${@:2} != "" ]] 
+            if [[ ${@:2} != "" ]]
             then
                 echo "Task added successfuly. Content of added task: "
                 updateIndex
@@ -119,13 +120,13 @@ while [ $# -gt 0 ]; do
             then
                 prevContent=$line
             fi
-        done < "./$tasks"
+        done < "$tasks"
 
-        if [[ $prevContent != "" ]] 
+        if [[ $prevContent != "" ]]
         then
             if [[ $content != "" ]]
             then
-                sed -i -e "s/$prevContent/$idEdit) $content/" "./$tasks"
+                sed -i -e "s/$prevContent/$idEdit) $content/" "$tasks"
             else
                 echo "New content of task can't be empty"
             fi
@@ -144,7 +145,7 @@ while [ $# -gt 0 ]; do
         else
             echo "Enter the ID"
         fi
-        
+
         exit
         ;;
     -c|--clear)
